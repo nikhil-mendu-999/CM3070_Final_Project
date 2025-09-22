@@ -1,0 +1,17 @@
+-- AlterTable
+ALTER TABLE "public"."User" ADD COLUMN     "dateOfBirth" TIMESTAMP(3),
+ADD COLUMN     "fieldVisibilities" JSONB,
+ADD COLUMN     "gender" TEXT,
+ADD COLUMN     "genderVariants" JSONB,
+ADD COLUMN     "legalName" TEXT,
+ADD COLUMN     "legalNameVariants" JSONB,
+ADD COLUMN     "locale" TEXT,
+ADD COLUMN     "nickname" TEXT,
+ADD COLUMN     "preferredName" TEXT,
+ADD COLUMN     "preferredNameVariants" JSONB,
+ADD COLUMN     "profilePhoto" TEXT,
+ADD COLUMN     "pronouns" TEXT,
+ADD COLUMN     "pronounsVariants" JSONB,
+ADD COLUMN     "religiousName" TEXT,
+ADD COLUMN     "stageName" TEXT,
+ADD COLUMN     "username" TEXT;

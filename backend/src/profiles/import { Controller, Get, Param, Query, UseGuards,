@@ -1,0 +1,21 @@
+import { Controller, Get, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ProfilesService } from './profiles.service';
+
+@UseGuards(JwtAuthGuard)
+@Controller('users/:userId/profiles')
+export class ProfilesController {
+  constructor(private readonly profilesService: ProfilesService) {}
+
+  @Get()
+  async getUserProfiles(
+    @Request() req,
+    @Param('userId') userId: string,
+    @Query('contextId') contextId?: string,
+  ) {
+    const requestingUserId = req.user.userId;
+    const uid = parseInt(userId, 10);
+    const cid = contextId ? parseInt(contextId, 10) : undefined;
+    return this.profilesService.getUserProfiles(requestingUserId, uid, cid);
+  }
+}

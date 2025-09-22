@@ -1,0 +1,130 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      Int                  @id @default(autoincrement())
+  email                   String               @unique
+  passwordHash            String?
+  profiles                Profile[]
+  contexts                UserContext[]
+  linkedAccounts          UserLinkedAccount[]
+  auditLogs               AuditLog[]           @relation("UserAuditLogs")
+  legalName               String?
+  legalNameVariants       Json?
+  preferredName           String?
+  preferredNameVariants   Json?
+  username                String?
+  nickname                String?
+  stageName               String?
+  religiousName           String?
+  gender                  String?
+  genderVariants          Json?
+  pronouns                String?
+  pronounsVariants        Json?
+  dateOfBirth             DateTime?
+  locale                  String?
+  profilePhoto            String?
+  fieldVisibilities       Json?
+  consentGrants           ConsentGrant[]
+}
+
+model Profile {
+  id                  Int              @id @default(autoincrement())
+  name                String
+  user                User             @relation(fields: [userId], references: [id])
+  userId              Int
+  contexts            ProfileContext[]
+  auditLogs           AuditLog[]       @relation("ProfileAuditLogs")
+  consentGrants       ConsentGrant[]
+  label               String?          // Descriptive label
+  displayName         String?          // Display name
+  gender              String?          // Gender
+  sexuality           String?          // Sexuality
+  relationshipStatus  String?          // Relationship status
+  profilePicture      String?          // Profile picture url/file
+  context             String?          // Context type/category
+  visibility          String?          // Sharable/not sharable
+  @@unique([userId, name])
+}
+
+model ProfileContext {
+  id          Int       @id @default(autoincrement())
+  profile     Profile   @relation(fields: [profileId], references: [id])
+  profileId   Int
+  context     Context   @relation(fields: [contextId], references: [id])
+  contextId   Int
+  displayName String?
+  visibility  String    // "public", "context-members", "private"
+  @@unique([profileId, contextId])
+}
+
+model Context {
+  id        Int             @id @default(autoincrement())
+  name      String          @unique
+  profiles  ProfileContext[]
+  members   UserContext[]
+  auditLogs AuditLog[]      @relation("ContextAuditLogs")
+}
+
+model UserContext {
+  id        Int       @id @default(autoincrement())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int
+  context   Context   @relation(fields: [contextId], references: [id])
+  contextId Int
+  role      String    @default("member")
+  @@unique([userId, contextId])
+}
+
+model AuditLog {
+  id               Int           @id @default(autoincrement())
+  createdAt        DateTime      @default(now())
+  user             User?         @relation("UserAuditLogs", fields: [userId], references: [id])
+  userId           Int?
+  context          Context?      @relation("ContextAuditLogs", fields: [contextId], references: [id])
+  contextId        Int?
+  profile          Profile?      @relation("ProfileAuditLogs", fields: [profileId], references: [id])
+  profileId        Int?
+  consentGrant     ConsentGrant? @relation(fields: [consentGrantId], references: [id])
+  consentGrantId   Int?          @unique
+  action           String
+  target           String?
+  message          String?
+  before           Json?
+  after            Json?
+}
+
+model ConsentGrant {
+  id         Int       @id @default(autoincrement())
+  user       User      @relation(fields: [userId], references: [id])
+  userId     Int
+  profile    Profile   @relation(fields: [profileId], references: [id])
+  profileId  Int
+  clientId   String
+  scope      String?
+  issuedAt   DateTime  @default(now())
+  expiresAt  DateTime
+  revoked    Boolean   @default(false)
+  token      String
+  grantedAttrs Json?
+  auditLog   AuditLog?
+}
+
+model UserLinkedAccount {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  provider    String
+  providerId  String
+  displayName String?
+  avatar      String?
+  profileUrl  String?
+  @@unique([provider, providerId])
+}
